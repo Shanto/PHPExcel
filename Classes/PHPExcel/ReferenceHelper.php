@@ -67,6 +67,26 @@ class PHPExcel_ReferenceHelper
 	 */
 	protected function __construct() {
 	}
+	
+	private function cellSort($a, $b) {
+		list($ac,$ar) = sscanf($a,'%[A-Z]%d');
+		list($bc,$br) = sscanf($b,'%[A-Z]%d');
+
+		if ($ar == $br) {
+			return strcasecmp(strlen($ac) . $ac, strlen($bc) . $bc);
+		}
+		return ($ar < $br) ? -1 : 1;
+	}
+
+	private function cellReverseSort($a, $b) {
+		list($ac,$ar) = sscanf($a,'%[A-Z]%d');
+		list($bc,$br) = sscanf($b,'%[A-Z]%d');
+
+		if ($ar == $br) {
+			return 1 - strcasecmp(strlen($ac) . $ac, strlen($bc) . $bc);
+		}
+		return ($ar < $br) ? 1 : -1;
+	}
 
 	/**
 	 * Insert a new column, updating all possible related data
@@ -250,7 +270,10 @@ class PHPExcel_ReferenceHelper
 
 
 		// Update worksheet: breaks
-		$aBreaks = array_reverse($pSheet->getBreaks(), true);
+		$aBreaks = $pSheet->getBreaks();
+		($pNumCols > 0 || $pNumRows > 0) ? 
+			uksort($aBreaks, array('PHPExcel_ReferenceHelper','cellReverseSort')) : 
+			uksort($aBreaks, array('PHPExcel_ReferenceHelper','cellSort')); 
 		foreach ($aBreaks as $key => $value) {
 			$newReference = $this->updateCellReference($key, $pBefore, $pNumCols, $pNumRows);
 			if ($key != $newReference) {
@@ -269,7 +292,10 @@ class PHPExcel_ReferenceHelper
 		$pSheet->setComments($aNewComments); // replace the comments array
 
 		// Update worksheet: hyperlinks
-		$aHyperlinkCollection = array_reverse($pSheet->getHyperlinkCollection(), true);
+		$aHyperlinkCollection = $pSheet->getHyperlinkCollection();
+		($pNumCols > 0 || $pNumRows > 0) ? 
+			uksort($aHyperlinkCollection, array('PHPExcel_ReferenceHelper','cellReverseSort')) : 
+			uksort($aHyperlinkCollection, array('PHPExcel_ReferenceHelper','cellSort')); 
 		foreach ($aHyperlinkCollection as $key => $value) {
 			$newReference = $this->updateCellReference($key, $pBefore, $pNumCols, $pNumRows);
 			if ($key != $newReference) {
@@ -278,9 +304,11 @@ class PHPExcel_ReferenceHelper
 			}
 		}
 
-
 		// Update worksheet: data validations
-		$aDataValidationCollection = array_reverse($pSheet->getDataValidationCollection(), true);
+		$aDataValidationCollection = $pSheet->getDataValidationCollection();
+		($pNumCols > 0 || $pNumRows > 0) ? 
+			uksort($aDataValidationCollection, array('PHPExcel_ReferenceHelper','cellReverseSort')) : 
+			uksort($aDataValidationCollection, array('PHPExcel_ReferenceHelper','cellSort')); 
 		foreach ($aDataValidationCollection as $key => $value) {
 			$newReference = $this->updateCellReference($key, $pBefore, $pNumCols, $pNumRows);
 			if ($key != $newReference) {
@@ -301,7 +329,10 @@ class PHPExcel_ReferenceHelper
 
 
 		// Update worksheet: protected cells
-		$aProtectedCells = array_reverse($pSheet->getProtectedCells(), true);
+		$aProtectedCells = $pSheet->getProtectedCells();
+		($pNumCols > 0 || $pNumRows > 0) ? 
+			uksort($aProtectedCells, array('PHPExcel_ReferenceHelper','cellReverseSort')) : 
+			uksort($aProtectedCells, array('PHPExcel_ReferenceHelper','cellSort')); 
 		foreach ($aProtectedCells as $key => $value) {
 			$newReference = $this->updateCellReference($key, $pBefore, $pNumCols, $pNumRows);
 			if ($key != $newReference) {
